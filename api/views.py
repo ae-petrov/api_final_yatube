@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_list_or_404, get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
@@ -13,15 +14,11 @@ User = get_user_model()
 
 
 class PostViewSet(ModelViewSet):
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsOwnerOrReadOnly]
-
-    def get_queryset(self):
-        group = self.request.GET.get('group')
-        if group:
-            post_list = get_list_or_404(Post, group=group)
-            return post_list
-        return Post.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['group',]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
